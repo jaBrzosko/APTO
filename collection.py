@@ -97,3 +97,9 @@ class Collection:
                 
                 # save face
                 self.faces.append(face)
+        
+        # remove face with all vertices
+        for face in self.faces:
+            if len(face.edges) == len(self.vertices):
+                self.faces.remove(face)
+                break
