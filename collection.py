@@ -1,3 +1,6 @@
+from table import Table
+from rooted import RootedTree
+from spanning import SpanningTree
 from vertex import Vertex
 from edge import Edge, Embeding, Face
 
@@ -6,6 +9,8 @@ class Collection:
         self.edges = {}
         self.vertices = {}
         self.faces = []
+        self.spanningTree = SpanningTree()
+        self.rootedTree = RootedTree()
     
     def add_edge(self, edge):
         self.edges[edge.id] = edge
@@ -80,7 +85,7 @@ class Collection:
                     counter_clockwise_edges.append(edge)
                 
                 # create face
-                face = Face()
+                face = Face(len(self.faces))
                 face.add_edge(edge)
                 u = vertex
                 v = vertexNode.data
@@ -103,3 +108,25 @@ class Collection:
             if len(face.edges) == len(self.vertices):
                 self.faces.remove(face)
                 break
+
+    def create_spanning_tree(self):
+        for face in self.faces:
+            self.spanningTree.process_face(face)
+        self.rootedTree.process_spanning_tree(self.spanningTree)
+        self.rootedTree.order_children(self.rootedTree.root)
+
+    def solve(self):
+        return self.table(self.rootedTree.root)
+    
+    def table(self, v):
+        if v.is_leaf():
+            tab = Table(v.u, v.v)
+            tab.create_edge_table()
+            return tab
+        T = self.table(v.first_child())
+
+        for i in range(1, len(v.children)):
+            Ti = self.table(v.children[i])
+            T = T.merge(Ti)
+        T.adjust()
+        return T
