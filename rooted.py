@@ -74,6 +74,14 @@ class RootedTree:
             if root.children[i].vertex_in(u):
                 root.children = root.children[i:] + root.children[:i]
                 break
+        
+
+        # i don't know if it covers all cases or if it doesn't break something else
+        if root.children[0].u.id != u.id:
+            root.children[0].swap_uv()
+        if root.children[0].v.id != root.children[1].u.id and root.children[0].v.id != root.children[1].v.id:
+            root.children = root.children[:1] + list(reversed(root.children[1:]))
+
         for child in root.children:
             if child.u.id != u.id:
                 child.swap_uv()
