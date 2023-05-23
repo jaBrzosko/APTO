@@ -2,25 +2,25 @@ from collection import Collection
 
 def main():
     collection = Collection()
-    collection.load_file('graphs/HexaGraph.txt')
+    collection.load_file('graphs/CuttingPoint.txt')
     collection.materialize()
 
     collection.create_faces()
     collection.create_spanning_tree()
 
-    finalTable = collection.solve()
+    # finalTable = collection.solve()
 
-    print("Final Table:")
-    for k in finalTable.value:
-        print(k, finalTable.value[k])
+    # print("Final Table:")
+    # for k in finalTable.value:
+    #     print(k, finalTable.value[k])
 
-#     root = collection.rootedTree.root
-#     printRoot(root)
+    root = collection.rootedTree.root
+    printRoot(root)
 
-# def printRoot(root):
-#     print((root.u.id, root.v.id) , [(e.u.id, e.v.id) for e in root.children])
-#     for child in root.children:
-#         printRoot(child)
+def printRoot(root):
+    print((root.u.id, root.v.id) , [(e.u.id, e.v.id) for e in root.children])
+    for child in root.children:
+        printRoot(child)
 
     # print("Faces:")
     # for face in collection.faces:

@@ -70,7 +70,9 @@ class Collection:
 
         for vertex in self.vertices.values():
             vertexNode = vertex.clockwise_vertices.head
-            while vertexNode.next != vertex.clockwise_vertices.head:
+            firstRun = True
+            while vertexNode != vertex.clockwise_vertices.head or firstRun:
+                firstRun = False
                 # get edge object and check if we already were there
                 edge = vertex.get_edge_to(vertexNode.data)
                 if edge.is_clockwise(vertex, vertexNode.data):
@@ -105,7 +107,13 @@ class Collection:
         
         # remove face with all vertices
         for face in self.faces:
-            if len(face.edges) == len(self.vertices):
+            visited_vertices = []
+            for edge in face.edges:
+                if edge.u.id not in visited_vertices:
+                    visited_vertices.append(edge.u.id)
+                if edge.v.id not in visited_vertices:
+                    visited_vertices.append(edge.v.id)
+            if len(visited_vertices) == len(self.vertices):
                 self.faces.remove(face)
                 break
 
