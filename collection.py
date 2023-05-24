@@ -105,6 +105,7 @@ class Collection:
                 # save face
                 self.faces.append(face)
         
+
         # remove face with all vertices
         for face in self.faces:
             visited_vertices = []
@@ -117,13 +118,32 @@ class Collection:
                 self.faces.remove(face)
                 break
 
+        # fix bridges
+        edgesInFaces = []
+        for face in self.faces:
+            for edge in face.edges:
+                edgesInFaces.append(edge)
+
+        for edge in self.edges.values():
+            if edge in edgesInFaces:
+                continue
+            face = Face(len(self.faces) + 1)
+            reversedEdge = Edge(-edge.id, edge.v, edge.u)
+            reversedEmbeding = Embeding(edge.embeding.c1, edge, edge, edge.embeding.cc2)
+            newEmbeding = Embeding(reversedEdge, edge.embeding.c2, edge.embeding.cc1, reversedEdge)
+            reversedEdge.set_embeding(reversedEmbeding)
+            edge.set_embeding(newEmbeding)
+            face.add_edge(edge)
+            face.add_edge(reversedEdge)
+            self.faces.append(face)
+        
     def create_spanning_tree(self):
         for face in self.faces:
             self.spanningTree.process_face(face)
         self.rootedTree.process_spanning_tree(self.spanningTree)
         self.rootedTree.order_children(self.rootedTree.root)
         # check if all faces are covered in rooted tree
-        if self.rootedTree.facesProcessed != len(self.faces):
+        while self.rootedTree.facesProcessed != len(self.faces):
             self.rootedTree.process_cutpoints(self.spanningTree)
 
     def solve(self):

@@ -2,7 +2,7 @@ from collection import Collection
 
 def main():
     collection = Collection()
-    collection.load_file('graphs/Baker.txt')
+    collection.load_file('graphs/BakerWithBridge.txt')
     collection.materialize()
 
     collection.create_faces()
