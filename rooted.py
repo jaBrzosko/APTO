@@ -15,6 +15,10 @@ class RootedNode:
         self.children.append(child)
         child.parent = self
 
+    def add_child_at(self, child, index):
+        self.children.insert(index, child)
+        child.parent = self
+
     def first_child(self):
         return self.children[0] if len(self.children) > 0 else None
 
@@ -34,7 +38,7 @@ class RootedNode:
         u = subRoot.u
         for i, child in enumerate(self.children):
             if child.v == u:
-                self.children.insert(i + 1, subRoot)
+                self.add_child_at(subRoot, i + 1)
                 return True
         for child in self.children:
             if len(child.children) > 0:
