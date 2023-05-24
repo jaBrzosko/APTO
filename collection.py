@@ -122,6 +122,9 @@ class Collection:
             self.spanningTree.process_face(face)
         self.rootedTree.process_spanning_tree(self.spanningTree)
         self.rootedTree.order_children(self.rootedTree.root)
+        # check if all faces are covered in rooted tree
+        if self.rootedTree.facesProcessed != len(self.faces):
+            self.rootedTree.process_cutpoints(self.spanningTree)
 
     def solve(self):
         return self.table(self.rootedTree.root)

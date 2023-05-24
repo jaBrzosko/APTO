@@ -40,3 +40,12 @@ class Face:
 
     def add_edge(self, edge):
         self.edges.append(edge)
+
+    def intersection_vertex(self, face):
+        for edge in self.edges:
+            for other_edge in face.edges:
+                if edge.u.id == other_edge.u.id or edge.u.id == other_edge.v.id:
+                    return edge.u
+                if edge.v.id == other_edge.u.id or edge.v.id == other_edge.v.id:
+                    return edge.v
+        return None

@@ -17,6 +17,7 @@ class SpanningNode:
 class SpanningTree:
     def __init__(self):
         self.vertices = []
+        self.faces = []
         self.root_face = None
 
     def add_node(self, node):
@@ -34,6 +35,7 @@ class SpanningTree:
         if self.root_face is None:
             self.root_face = faceNode
         self.add_node(faceNode)
+        self.faces.append(faceNode)
         for edge in face.edges:
             edgeNode = self.create_edge_node(edge)
             self.add_node(edgeNode)

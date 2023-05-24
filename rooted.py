@@ -29,10 +29,24 @@ class RootedNode:
     
     def is_leaf(self):
         return len(self.children) == 0
+    
+    def add_subtree(self, subRoot):
+        u = subRoot.u
+        for i, child in enumerate(self.children):
+            if child.v == u:
+                self.children.insert(i + 1, subRoot)
+                return True
+        for child in self.children:
+            if len(child.children) > 0:
+                if child.add_subtree(subRoot):
+                    return True
+        return False
 
 class RootedTree:
     def __init__(self):
         self.root = None
+        self.faces = []
+        self.facesProcessed = 0
 
     def process_spanning_tree(self, spanningTree: SpanningTree):
         assert spanningTree.root_face is not None and spanningTree.root_face.isFace
@@ -60,6 +74,8 @@ class RootedTree:
             return
         
         # is face
+        self.facesProcessed += 1
+        self.faces.append(node.data)
         for neighbor in node.neighbors:
             if neighbor == excepting:
                 continue
@@ -90,10 +106,18 @@ class RootedTree:
         for child in root.children:
             self.order_children(child)
 
+    def process_cutpoints(self, spanningTree: SpanningTree):
+        # check all faces
+        for faceNode in spanningTree.faces:
+            face = faceNode.data
+            if face not in self.faces:
+                for usedFace in self.faces:
+                    intersectionVertex = face.intersection_vertex(usedFace)
+                    if intersectionVertex is not None:
+                        break
+                if intersectionVertex is None:
+                    continue # face is not directly connected via cutpoint to processed graph
 
-
-    def add_face(self, face):
-        pass
-
-    def add_edge(self, edge):
-        pass
+                faceRoot = RootedNode(face, intersectionVertex, intersectionVertex, True)
+                self.process_node(faceRoot, faceNode)
+                self.root.add_subtree(faceRoot)
