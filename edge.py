@@ -18,6 +18,27 @@ class Edge:
     def get_counterclockwise_edge(self, u):
         return self.embeding.cc1 if u.id == self.u.id else self.embeding.cc2
     
+    def get_smaller_layer_vertex(self):
+        return self.u if self.u.layer < self.v.layer else self.v
+
+    def get_common_vertex(self, edge):
+        assert self.u.id == edge.u.id or self.u.id == edge.v.id or self.v.id == edge.u.id or self.v.id == edge.v.id
+        return self.u if self.u.id == edge.u.id or self.u.id == edge.v.id else self.v
+
+    def set_clockwise_edge(self, u, edge):
+        assert self.u.id == u.id or self.v.id == u.id
+        if u.id == self.u.id:
+            self.embeding.c1 = edge
+        else:
+            self.embeding.c2 = edge
+    
+    def set_counterclockwise_edge(self, u, edge):
+        assert self.u.id == u.id or self.v.id == u.id
+        if u.id == self.u.id:
+            self.embeding.cc1 = edge
+        else:
+            self.embeding.cc2 = edge
+
     def is_clockwise(self, u, v):
         assert self.u.id == u.id or self.v.id == u.id
         assert self.u.id == v.id or self.v.id == v.id
@@ -26,6 +47,9 @@ class Edge:
     
     def is_vertex_in(self, u):
         return self.u.id == u.id or self.v.id == u.id
+    
+    def is_layer_connecting(self):
+        return self.u.layer != self.v.layer
     
 class Embeding:
     def __init__(self, c1, c2, cc1, cc2):

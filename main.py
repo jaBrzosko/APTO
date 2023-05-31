@@ -5,6 +5,9 @@ def main():
     collection.load_file('graphs/test1.txt')
     collection.materialize()
 
+    collection.traingulate()
+    collection.materialize()
+
     # collection.create_faces()
     # collection.create_spanning_tree()
 

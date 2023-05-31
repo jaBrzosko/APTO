@@ -13,6 +13,7 @@ class Collection:
         self.rootedTree = RootedTree()
         self.numberOfLayers = 0
         self.layers = []
+        self.reversedLayers = False
     
     def add_edge(self, edge):
         self.edges[edge.id] = edge
@@ -76,7 +77,9 @@ class Collection:
         for vertex in self.vertices.values():
             vertex.init_clockwise_vertices()
             vertex.init_counterclockwise_vertices()
-            vertex.reverse_layer(self.numberOfLayers)
+            if not self.reversedLayers:
+                vertex.reverse_layer(self.numberOfLayers)
+        self.reversedLayers = True
 
     def create_faces(self):
 
@@ -176,3 +179,42 @@ class Collection:
             T = T.merge(Ti)
         T.adjust()
         return T
+    
+    def traingulate(self):
+        copiedEdges = self.edges.copy()
+        for edge in copiedEdges.values():
+            if not edge.is_layer_connecting():
+                continue
+            # I am not sure why it works, I thought it needed more logic
+            while True:
+                smallerVertex = edge.get_smaller_layer_vertex()
+                clockwiseEdge = edge.get_clockwise_edge(smallerVertex)
+                sameLayerVertex = clockwiseEdge.get_other_vertex(smallerVertex)
+                otherVertex = edge.get_other_vertex(smallerVertex)
+                if sameLayerVertex.layer != smallerVertex.layer:
+                    break
+
+                maybeEdge = otherVertex.get_edge_to(sameLayerVertex)
+                if maybeEdge is not None:
+                    break
+                print("New edge between " + str(otherVertex.id) + " and " + str(sameLayerVertex.id))
+                edge = self.add_fake_edge(edge, clockwiseEdge)
+
+    # e2 has to be clockwise to e1
+    def add_fake_edge(self, e1, e2):
+        commonVertex = e1.get_common_vertex(e2)
+        assert commonVertex is not None and e1.get_clockwise_edge(commonVertex) == e2
+        u = e1.get_other_vertex(commonVertex)
+        v = e2.get_other_vertex(commonVertex)
+        fakeEdge = Edge(-len(self.edges), u, v, True)
+        e1_cc = e1.get_counterclockwise_edge(u)
+        e2_c = e2.get_clockwise_edge(v)
+        fakeEmbedding = Embeding(e1, e2_c, e1_cc, e2)
+        fakeEdge.set_embeding(fakeEmbedding)
+        self.add_edge(fakeEdge)
+        e1.set_counterclockwise_edge(u, fakeEdge)
+        e2.set_clockwise_edge(v, fakeEdge)
+        e1_cc.set_clockwise_edge(u, fakeEdge)
+        e2_c.set_counterclockwise_edge(v, fakeEdge)
+
+        return fakeEdge

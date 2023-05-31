@@ -20,6 +20,7 @@ class Vertex:
         self.edges.append(edge)
     
     def init_clockwise_vertices(self):
+        self.clockwise_vertices = CLL()
         counter = 0
         edge = self.edges[0]
 
@@ -29,6 +30,7 @@ class Vertex:
             counter += 1
 
     def init_counterclockwise_vertices(self):
+        self.counterclockwise_vertices = CLL()
         counter = 0
         edge = self.edges[0]
 
@@ -47,3 +49,4 @@ class Vertex:
         for edge in self.edges:
             if edge.get_other_vertex(self).id == vertex.id:
                 return edge
+            
