@@ -11,6 +11,8 @@ class Collection:
         self.faces = []
         self.spanningTree = SpanningTree()
         self.rootedTree = RootedTree()
+        self.numberOfLayers = 0
+        self.layers = []
     
     def add_edge(self, edge):
         self.edges[edge.id] = edge
@@ -31,10 +33,10 @@ class Collection:
     def get_vertex(self, vertexId):
         return self.vertices[vertexId]
     
-    def create_vertex(self, vertexId):
+    def create_vertex(self, vertexId, layer):
         if vertexId in self.vertices:
             return self.get_vertex(vertexId)
-        vertex = Vertex(vertexId)
+        vertex = Vertex(vertexId, layer)
         return vertex
 
     def load_file(self, path):
@@ -45,8 +47,16 @@ class Collection:
             edgeId = int(data[0])
             uId = int(data[1])
             vId = int(data[2])
-            u = self.create_vertex(uId)
-            v = self.create_vertex(vId)
+            layer1 = int(float(data[7]))
+            layer2 = int(float(data[8]))
+
+            if layer1 > self.numberOfLayers:
+                self.numberOfLayers = layer1
+            if layer2 > self.numberOfLayers:
+                self.numberOfLayers = layer2
+
+            u = self.create_vertex(uId, layer1)
+            v = self.create_vertex(vId, layer2)
             edge = Edge(edgeId, u, v)
             self.add_edge(edge)
         for line in f:
@@ -59,9 +69,14 @@ class Collection:
             embeding = Embeding(c1, c2, cc1, cc2)
             self.get_edge(int(data[0])).set_embeding(embeding)
     
+    def create_layers(self):
+        pass
+
     def materialize(self):
         for vertex in self.vertices.values():
             vertex.init_clockwise_vertices()
+            vertex.init_counterclockwise_vertices()
+            vertex.reverse_layer(self.numberOfLayers)
 
     def create_faces(self):
 

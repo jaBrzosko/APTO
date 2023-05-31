@@ -2,17 +2,17 @@ from collection import Collection
 
 def main():
     collection = Collection()
-    collection.load_file('graphs/BakerWithBridge.txt')
+    collection.load_file('graphs/test1.txt')
     collection.materialize()
 
-    collection.create_faces()
-    collection.create_spanning_tree()
+    # collection.create_faces()
+    # collection.create_spanning_tree()
 
-    finalTable = collection.solve()
+    # finalTable = collection.solve()
 
-    print("Final Table:")
-    for k in finalTable.value:
-        print(k, finalTable.value[k])
+    # print("Final Table:")
+    # for k in finalTable.value:
+    #     print(k, finalTable.value[k])
 
 #     print("Proceseed faces:", collection.rootedTree.facesProcessed)
 #     root = collection.rootedTree.root
@@ -31,14 +31,21 @@ def main():
     # for vertex in collection.spanningTree.vertices:
     #         print("Face " if vertex.isFace else "Edge ", vertex.data.id, [("F:" if e.isFace else "E:") + str(e.data.id) for e in vertex.neighbors])
     
-    # for vertex in collection.vertices.values():
-    #     temp = str(vertex.id) + ' -> '
-    #     startV = vertex.clockwise_vertices.head
-    #     head = startV
-    #     while head.next != startV:
-    #         temp += str(head.data.id) + ', '
-    #         head = head.next
-    #     print(temp + str(head.data.id))
+    for vertex in collection.vertices.values():
+        temp = str(vertex.id) + ' layer: ' + str(vertex.layer) + ' -> '
+        startV = vertex.clockwise_vertices.head
+        head = startV
+        while head.next != startV:
+            temp += str(head.data.id) + ', '
+            head = head.next
+
+        temp += str(head.data.id) + ' -> '
+        startV = vertex.counterclockwise_vertices.head
+        head = startV
+        while head.next != startV:
+            temp += str(head.data.id) + ', '
+            head = head.next
+        print(temp + str(head.data.id))
 
     # for vertex in collection.vertices.values():
     #     print(vertex.id, [(e.id, (e.u.id, e.v.id)) for e in vertex.edges])        

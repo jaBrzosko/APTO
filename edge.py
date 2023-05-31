@@ -1,9 +1,10 @@
 class Edge:
-    def __init__(self, id, u, v):
+    def __init__(self, id, u, v, isFake = False):
         self.id = id
         self.u = u
         self.v = v
         self.embeding = None
+        self.isFake = isFake
 
     def set_embeding(self, embeding):
         self.embeding = embeding
@@ -14,7 +15,7 @@ class Edge:
     def get_clockwise_edge(self, u):
         return self.embeding.c1 if u.id == self.u.id else self.embeding.c2
     
-    def get_counter_clockwise_edge(self, u):
+    def get_counterclockwise_edge(self, u):
         return self.embeding.cc1 if u.id == self.u.id else self.embeding.cc2
     
     def is_clockwise(self, u, v):
