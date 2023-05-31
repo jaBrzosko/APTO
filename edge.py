@@ -20,8 +20,11 @@ class Edge:
     def is_clockwise(self, u, v):
         assert self.u.id == u.id or self.v.id == u.id
         assert self.u.id == v.id or self.v.id == v.id
-        
+
         return self.u.id == u.id and self.v.id == v.id
+    
+    def is_vertex_in(self, u):
+        return self.u.id == u.id or self.v.id == u.id
     
 class Embeding:
     def __init__(self, c1, c2, cc1, cc2):
@@ -31,8 +34,18 @@ class Embeding:
         self.cc2 = cc2
 
 class Face:
-    def __init__(self):
+    def __init__(self, id):
+        self.id = id
         self.edges = []
 
     def add_edge(self, edge):
         self.edges.append(edge)
+
+    def intersection_vertex(self, face):
+        for edge in self.edges:
+            for other_edge in face.edges:
+                if edge.u.id == other_edge.u.id or edge.u.id == other_edge.v.id:
+                    return edge.u
+                if edge.v.id == other_edge.u.id or edge.v.id == other_edge.v.id:
+                    return edge.v
+        return None
