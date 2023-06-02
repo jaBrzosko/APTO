@@ -5,8 +5,28 @@ def main():
     collection.load_file('graphs/test1.txt')
     collection.materialize()
 
+    collection.make_layers()
+
     collection.traingulate()
     collection.materialize()
+
+    for layer in collection.layers.values():
+        layer.materialize()
+        for vertex in layer.vertices.values():
+            temp = str(vertex.id) + ' layer: ' + str(vertex.layer) + ' -> '
+            startV = vertex.clockwise_vertices.head
+            head = startV
+            while head.next != startV:
+                temp += str(head.data.id) + ', '
+                head = head.next
+
+            temp += str(head.data.id) + ' -> '
+            startV = vertex.counterclockwise_vertices.head
+            head = startV
+            while head.next != startV:
+                temp += str(head.data.id) + ', '
+                head = head.next
+            print(temp + str(head.data.id))
 
     # collection.create_faces()
     # collection.create_spanning_tree()
@@ -34,21 +54,21 @@ def main():
     # for vertex in collection.spanningTree.vertices:
     #         print("Face " if vertex.isFace else "Edge ", vertex.data.id, [("F:" if e.isFace else "E:") + str(e.data.id) for e in vertex.neighbors])
     
-    for vertex in collection.vertices.values():
-        temp = str(vertex.id) + ' layer: ' + str(vertex.layer) + ' -> '
-        startV = vertex.clockwise_vertices.head
-        head = startV
-        while head.next != startV:
-            temp += str(head.data.id) + ', '
-            head = head.next
+    # for vertex in collection.vertices.values():
+    #     temp = str(vertex.id) + ' layer: ' + str(vertex.layer) + ' -> '
+    #     startV = vertex.clockwise_vertices.head
+    #     head = startV
+    #     while head.next != startV:
+    #         temp += str(head.data.id) + ', '
+    #         head = head.next
 
-        temp += str(head.data.id) + ' -> '
-        startV = vertex.counterclockwise_vertices.head
-        head = startV
-        while head.next != startV:
-            temp += str(head.data.id) + ', '
-            head = head.next
-        print(temp + str(head.data.id))
+    #     temp += str(head.data.id) + ' -> '
+    #     startV = vertex.counterclockwise_vertices.head
+    #     head = startV
+    #     while head.next != startV:
+    #         temp += str(head.data.id) + ', '
+    #         head = head.next
+    #     print(temp + str(head.data.id))
 
     # for vertex in collection.vertices.values():
     #     print(vertex.id, [(e.id, (e.u.id, e.v.id)) for e in vertex.edges])        

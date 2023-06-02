@@ -12,7 +12,7 @@ class Collection:
         self.spanningTree = SpanningTree()
         self.rootedTree = RootedTree()
         self.numberOfLayers = 0
-        self.layers = []
+        self.layers = {}
         self.reversedLayers = False
     
     def add_edge(self, edge):
@@ -197,7 +197,7 @@ class Collection:
                 maybeEdge = otherVertex.get_edge_to(sameLayerVertex)
                 if maybeEdge is not None:
                     break
-                print("New edge between " + str(otherVertex.id) + " and " + str(sameLayerVertex.id))
+                # print("New edge between " + str(otherVertex.id) + " and " + str(sameLayerVertex.id))
                 edge = self.add_fake_edge(edge, clockwiseEdge)
 
     # e2 has to be clockwise to e1
@@ -218,3 +218,56 @@ class Collection:
         e2_c.set_counterclockwise_edge(v, fakeEdge)
 
         return fakeEdge
+
+    def load_as_layer(self, collection, layerNumber):
+        for edge in collection.edges.values():
+            if edge.u.layer == edge.v.layer == layerNumber:
+                u = self.create_vertex(edge.u.id, layerNumber)
+                v = self.create_vertex(edge.v.id, layerNumber)
+                self.add_edge(Edge(edge.id, u, v))
+        for edgeId in self.edges:
+            edge = self.edges[edgeId]
+            originalEmeding = collection.edges[edgeId].embeding
+            
+            # clockwise to u (c1)
+            ec1 = originalEmeding.c1
+            c1Vertex = ec1.get_other_vertex(edge.u)
+            while c1Vertex.layer != layerNumber:
+                ec1 = ec1.get_clockwise_edge(edge.u)
+                c1Vertex = ec1.get_other_vertex(edge.u)
+
+            # clockwise to v (c2)
+            ec2 = originalEmeding.c2
+            c2Vertex = ec2.get_other_vertex(edge.v)
+            while c2Vertex.layer != layerNumber:
+                ec2 = ec2.get_clockwise_edge(edge.v)
+                c2Vertex = ec2.get_other_vertex(edge.v)
+
+            # counterclockwise to u (cc1)
+            ecc1 = originalEmeding.cc1
+            cc1Vertex = ecc1.get_other_vertex(edge.u)
+            while cc1Vertex.layer != layerNumber:
+                ecc1 = ecc1.get_counterclockwise_edge(edge.u)
+                cc1Vertex = ecc1.get_other_vertex(edge.u)
+
+            # counterclockwise to v (cc2)
+            ecc2 = originalEmeding.cc2
+            cc2Vertex = ecc2.get_other_vertex(edge.v)
+            while cc2Vertex.layer != layerNumber:
+                ecc2 = ecc2.get_counterclockwise_edge(edge.v)
+                cc2Vertex = ecc2.get_other_vertex(edge.v)
+
+            ec1 = self.get_edge(ec1.id)
+            ec2 = self.get_edge(ec2.id)
+            ecc1 = self.get_edge(ecc1.id)
+            ecc2 = self.get_edge(ecc2.id)
+
+
+            edge.set_embeding(Embeding(ec1, ec2, ecc1, ecc2))
+
+    def make_layers(self):
+
+        for i in range(self.numberOfLayers + 1):
+            layer = Collection()
+            layer.load_as_layer(self, i)
+            self.layers[i] = layer
