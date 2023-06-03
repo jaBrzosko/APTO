@@ -13,7 +13,6 @@ class Collection:
         self.rootedTree = RootedTree()
         self.numberOfLayers = 0
         self.layers = {}
-        self.reversedLayers = False
     
     def add_edge(self, edge):
         self.edges[edge.id] = edge
@@ -77,9 +76,11 @@ class Collection:
         for vertex in self.vertices.values():
             vertex.init_clockwise_vertices()
             vertex.init_counterclockwise_vertices()
-            if not self.reversedLayers:
-                vertex.reverse_layer(self.numberOfLayers)
-        self.reversedLayers = True
+
+    def reverse_layers(self):
+        for vertex in self.vertices.values():
+            vertex.reverse_layer(self.numberOfLayers)
+
 
     def create_faces(self):
 

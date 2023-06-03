@@ -2,31 +2,46 @@ from collection import Collection
 
 def main():
     collection = Collection()
-    collection.load_file('graphs/test1.txt')
+    collection.load_file('graphs/twoSecondLayers.txt')
     collection.materialize()
+    collection.reverse_layers()
 
     collection.make_layers()
 
     collection.traingulate()
     collection.materialize()
 
-    for layer in collection.layers.values():
-        layer.materialize()
-        for vertex in layer.vertices.values():
-            temp = str(vertex.id) + ' layer: ' + str(vertex.layer) + ' -> '
-            startV = vertex.clockwise_vertices.head
-            head = startV
-            while head.next != startV:
-                temp += str(head.data.id) + ', '
-                head = head.next
 
-            temp += str(head.data.id) + ' -> '
-            startV = vertex.counterclockwise_vertices.head
-            head = startV
-            while head.next != startV:
-                temp += str(head.data.id) + ', '
-                head = head.next
-            print(temp + str(head.data.id))
+    for k in collection.layers:
+        layer = collection.layers[k]
+        print("Layer", k)
+        layer.materialize()
+        layer.create_faces()
+        for face in layer.faces:
+            print(face.id, [e.id for e in face.edges])
+        # layer.create_spanning_tree()
+        # for vertex in layer.spanningTree.vertices:
+        #     print("Face " if vertex.isFace else "Edge ", vertex.data.id, [("F:" if e.isFace else "E:") + str(e.data.id) for e in vertex.neighbors])
+        # root = layer.rootedTree.root
+        # printRoot(root)
+
+    # for layer in collection.layers.values():
+    #     layer.materialize()
+    #     for vertex in layer.vertices.values():
+    #         temp = str(vertex.id) + ' layer: ' + str(vertex.layer) + ' -> '
+    #         startV = vertex.clockwise_vertices.head
+    #         head = startV
+    #         while head.next != startV:
+    #             temp += str(head.data.id) + ', '
+    #             head = head.next
+
+    #         temp += str(head.data.id) + ' -> '
+    #         startV = vertex.counterclockwise_vertices.head
+    #         head = startV
+    #         while head.next != startV:
+    #             temp += str(head.data.id) + ', '
+    #             head = head.next
+    #         print(temp + str(head.data.id))
 
     # collection.create_faces()
     # collection.create_spanning_tree()
@@ -40,11 +55,6 @@ def main():
 #     print("Proceseed faces:", collection.rootedTree.facesProcessed)
 #     root = collection.rootedTree.root
 #     printRoot(root)
-
-# def printRoot(root):
-#     print((root.u.id, root.v.id) , [(e.u.id, e.v.id) for e in root.children])
-#     for child in root.children:
-#         printRoot(child)
 
     # print("Faces:")
     # for face in collection.faces:
@@ -72,6 +82,11 @@ def main():
 
     # for vertex in collection.vertices.values():
     #     print(vertex.id, [(e.id, (e.u.id, e.v.id)) for e in vertex.edges])        
+
+def printRoot(root):
+    print((root.u.id, root.v.id) , [(e.u.id, e.v.id) for e in root.children])
+    for child in root.children:
+        printRoot(child)
 
 if __name__ == '__main__':
     main()
