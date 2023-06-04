@@ -7,23 +7,27 @@ def main():
     collection.reverse_layers()
 
     collection.make_layers()
+    collection.split_layers()
 
     collection.traingulate()
     collection.materialize()
 
+    collection.materialize_faces()
+    collection.create_layers_faces()
+    collection.check_reversing()
+    collection.create_layers_spanning_trees()
+    collection.find_encloseres()
+    collection.calculate_lbrb()
 
-    for k in collection.layers:
-        layer = collection.layers[k]
-        print("Layer", k)
-        layer.materialize()
-        layer.create_faces()
+
+    for i, layer in enumerate(collection.layers):
+        print("Layer", i)
         for face in layer.faces:
             print(face.id, [e.id for e in face.edges])
-        # layer.create_spanning_tree()
         # for vertex in layer.spanningTree.vertices:
-        #     print("Face " if vertex.isFace else "Edge ", vertex.data.id, [("F:" if e.isFace else "E:") + str(e.data.id) for e in vertex.neighbors])
-        # root = layer.rootedTree.root
-        # printRoot(root)
+            # print("Face " if vertex.isFace else "Edge ", vertex.data.id, [("F:" if e.isFace else "E:") + str(e.data.id) for e in vertex.neighbors])
+        root = layer.rootedTree.root
+        printRoot(root)
 
     # for layer in collection.layers.values():
     #     layer.materialize()

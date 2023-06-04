@@ -10,6 +10,10 @@ class RootedNode:
         self.isFace = isFace
         self.parent = None
         self.children = []
+        self.lb = None
+        self.rb = None
+        self.enclosingFace = None
+        self.enclosedRoots = []
 
     def add_child(self, child):
         self.children.append(child)
@@ -45,6 +49,13 @@ class RootedNode:
                 if child.add_subtree(subRoot):
                     return True
         return False
+    
+    def reverse(self):
+        self.u, self.v = self.v, self.u
+        self.children.reverse()
+        for child in self.children:
+            child.reverse()
+
 
 class RootedTree:
     def __init__(self):
@@ -54,7 +65,10 @@ class RootedTree:
 
     def process_spanning_tree(self, spanningTree: SpanningTree):
         assert spanningTree.root_face is not None and spanningTree.root_face.isFace
-        rootVertex = spanningTree.root_face.data.edges[0].u
+        e0 = spanningTree.root_face.data.edges[0]
+        e1 = spanningTree.root_face.data.edges[1]
+        commonVertex = e0.get_common_vertex(e1)
+        rootVertex = e0.get_other_vertex(commonVertex)
         self.root = RootedNode(spanningTree.root_face.data, rootVertex, rootVertex, True)
 
         self.process_node(self.root, spanningTree.root_face)
@@ -125,3 +139,6 @@ class RootedTree:
                 faceRoot = RootedNode(face, intersectionVertex, intersectionVertex, True)
                 self.process_node(faceRoot, faceNode)
                 self.root.add_subtree(faceRoot)
+    def reverse(self):
+        assert self.root is not None
+        self.root.reverse()

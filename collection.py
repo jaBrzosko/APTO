@@ -12,7 +12,7 @@ class Collection:
         self.spanningTree = SpanningTree()
         self.rootedTree = RootedTree()
         self.numberOfLayers = 0
-        self.layers = {}
+        self.layers = []
     
     def add_edge(self, edge):
         self.edges[edge.id] = edge
@@ -126,6 +126,7 @@ class Collection:
         
 
         # remove face with all vertices
+        # I', not sure if those faces won't have to be counterclockwise
         for face in self.faces:
             visited_vertices = []
             for edge in face.edges:
@@ -271,4 +272,90 @@ class Collection:
         for i in range(self.numberOfLayers + 1):
             layer = Collection()
             layer.load_as_layer(self, i)
-            self.layers[i] = layer
+            self.layers.append(layer)
+
+    def split(self):
+        k0 = next(iter(self.vertices))
+        visitedVertices = [self.vertices[k0]]
+        visitedEdges = []
+        index = 0
+
+        while index < len(visitedVertices):
+            vertex = visitedVertices[index]
+            for edge in vertex.edges:
+                if edge not in visitedEdges:
+                    visitedEdges.append(edge)
+                other = edge.get_other_vertex(vertex)
+                if other not in visitedVertices:
+                    visitedVertices.append(other)
+            index += 1
+        if len(visitedVertices) == len(self.vertices):
+            return None
+        newLayer = Collection()
+
+        for edge in visitedEdges:
+            self.edges.pop(edge.id)
+            newLayer.edges[edge.id] = edge
+
+        for vertex in visitedVertices:
+            self.vertices.pop(vertex.id)
+            newLayer.vertices[vertex.id] = vertex
+
+        return newLayer
+
+    def split_layers(self):
+        layersToBeAdded = []
+        for layer in self.layers:
+            while True:
+                newLayer = layer.split()
+                if newLayer is None:
+                    break
+                layersToBeAdded.append(newLayer)
+        for layer in layersToBeAdded:
+            self.layers.append(layer)
+
+    def materialize_faces(self):
+        for layer in self.layers:
+            layer.materialize()
+
+    def create_layers_faces(self):
+        for layer in self.layers:
+            layer.create_faces()
+
+    def create_layers_spanning_trees(self):
+        for layer in self.layers:
+            layer.create_spanning_tree()
+
+    def check_reversing(self):
+        for layer in self.layers:                
+            # check if layer is polygon and needs to be reversed
+            k0 = next(iter(layer.vertices))
+            if layer.vertices[k0].layer == self.numberOfLayers:
+                self.check_if_reverse_is_needed(layer, True)
+            else:
+                self.check_if_reverse_is_needed(layer, False)
+
+        
+
+    def check_if_reverse_is_needed(self, layer, checkClockwise):
+        face0 = layer.faces[0]
+        e0Id = face0.edges[0].id
+        e1Id = face0.edges[1].id
+
+        e0 = self.get_edge(e0Id)
+        e1 = self.get_edge(e1Id)
+        
+        commonVertex = e0.get_common_vertex(e1)
+        if checkClockwise:
+            edge = e1.get_clockwise_edge(commonVertex)
+        else:
+            edge = e1.get_counterclockwise_edge(commonVertex)
+        # we want this edge to be between {i}-th and {i+1}-th layer
+        if edge.get_other_vertex(commonVertex).layer != commonVertex.layer + (-1 if checkClockwise else 1):
+            layer.faces[0].edges.reverse()
+
+    def find_encloseres(self):
+        pass
+
+    def calculate_lbrb(self):
+        pass
