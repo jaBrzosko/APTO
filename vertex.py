@@ -9,6 +9,8 @@ class Vertex:
         self.layer = layer
         self.clockwise_vertices = CLL()
         self.counterclockwise_vertices = CLL()
+        self.fatherCollection = None
+        self.fakeCopy = None
 
     def reverse_layer(self, maxLayer):
         self.layer = maxLayer - self.layer
@@ -49,4 +51,6 @@ class Vertex:
         for edge in self.edges:
             if edge.get_other_vertex(self).id == vertex.id:
                 return edge
-            
+
+    def set_collection(self, collection):            
+        self.fatherCollection = collection

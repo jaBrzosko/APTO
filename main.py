@@ -19,11 +19,12 @@ def main():
     collection.find_encloseres()
     collection.calculate_lbrb()
 
-
     for i, layer in enumerate(collection.layers):
         print("Layer", i)
-        for face in layer.faces:
-            print(face.id, [e.id for e in face.edges])
+        # for vertex in layer.vertices.values():
+            # print(vertex.id, vertex.layer, [v.id for v in vertex.fatherCollection.vertices.values()])
+        # for face in layer.faces:
+            # print(face.id, [e.id for e in face.edges])
         # for vertex in layer.spanningTree.vertices:
             # print("Face " if vertex.isFace else "Edge ", vertex.data.id, [("F:" if e.isFace else "E:") + str(e.data.id) for e in vertex.neighbors])
         root = layer.rootedTree.root
@@ -88,7 +89,10 @@ def main():
     #     print(vertex.id, [(e.id, (e.u.id, e.v.id)) for e in vertex.edges])        
 
 def printRoot(root):
-    print((root.u.id, root.v.id) , [(e.u.id, e.v.id) for e in root.children])
+    print((root.u.id, root.v.id), (root.lb, root.rb), [(e.u.id, e.v.id) for e in root.children])
+    # print((root.u.id, root.v.id) , [(e.u.id, e.v.id) for e in root.children], 
+        #   "No encloser" if root.enclosingFaceRoot is None else (root.enclosingFaceRoot.u.id, root.enclosingFaceRoot.v.id),
+        #   "No enclosing" if len(root.enclosedComponents) == 0 else [(e.rootedTree.root.u.id, e.rootedTree.root.v.id) for e in root.enclosedComponents])
     for child in root.children:
         printRoot(child)
 

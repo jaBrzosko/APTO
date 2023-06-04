@@ -26,6 +26,7 @@ class Collection:
     def add_vertex(self, vertex):
         if vertex.id not in self.vertices:
             self.vertices[vertex.id] = vertex
+            vertex.set_collection(self)
 
     def get_edge(self, edgeId):
         return self.edges[edgeId]
@@ -33,6 +34,13 @@ class Collection:
     def get_vertex(self, vertexId):
         return self.vertices[vertexId]
     
+    def has_edge(self, uId, vId):
+        assert uId in self.vertices and vId in self.vertices
+        u = self.get_vertex(uId)
+        v = self.get_vertex(vId)
+        edge = u.get_edge_to(v)
+        return edge is not None
+
     def create_vertex(self, vertexId, layer):
         if vertexId in self.vertices:
             return self.get_vertex(vertexId)
@@ -221,11 +229,17 @@ class Collection:
 
         return fakeEdge
 
+    def set_fake_vertex_copy(self, vertexId, fakeVertex):
+        v = self.get_vertex(vertexId)
+        v.fakeCopy = fakeVertex
+
     def load_as_layer(self, collection, layerNumber):
         for edge in collection.edges.values():
             if edge.u.layer == edge.v.layer == layerNumber:
                 u = self.create_vertex(edge.u.id, layerNumber)
                 v = self.create_vertex(edge.v.id, layerNumber)
+                collection.set_fake_vertex_copy(edge.u.id, u)
+                collection.set_fake_vertex_copy(edge.v.id, v)        
                 self.add_edge(Edge(edge.id, u, v))
         for edgeId in self.edges:
             edge = self.edges[edgeId]
@@ -300,6 +314,7 @@ class Collection:
         for vertex in visitedVertices:
             self.vertices.pop(vertex.id)
             newLayer.vertices[vertex.id] = vertex
+            vertex.set_collection(newLayer)
 
         return newLayer
 
@@ -355,7 +370,40 @@ class Collection:
             layer.faces[0].edges.reverse()
 
     def find_encloseres(self):
-        pass
+        for layer in self.layers:
+            k0 = next(iter(layer.vertices))
+            if layer.vertices[k0].layer == self.numberOfLayers:
+                # skip most inner layer
+                continue
+            for face in layer.faces:
+                enclosedLayers = []
+                index = 0
+                L = len(face.edges)
+                while index < L:
+                    e0Id = face.edges[index].id
+                    e1Id = face.edges[(index + 1) % L].id
+                    e0 = self.get_edge(e0Id)
+                    e1 = self.get_edge(e1Id)
+                    commonVertex = e0.get_common_vertex(e1)
+                    ccEdge = e1.get_counterclockwise_edge(commonVertex)
+                    while ccEdge != e0:
+                        otherVertexId = ccEdge.get_other_vertex(commonVertex).id
+                        inLayer = self.get_vertex(otherVertexId).fakeCopy.fatherCollection
+                        if inLayer not in enclosedLayers:
+                            enclosedLayers.append(inLayer)
+                        ccEdge = ccEdge.get_counterclockwise_edge(commonVertex)
+                    index += 1
+                faceRoot = layer.rootedTree.root.find_face_root(face)
+                for enclosedLayer in enclosedLayers:
+                    faceRoot.add_enclosed_component(enclosedLayer)
+                # print("Face: ", [e.id for e in face.edges])
+                # for enclosedLayer in enclosedLayers:
+                    # print("Enclosed layer: ", [e.id for e in enclosedLayer.edges.values()])
 
     def calculate_lbrb(self):
-        pass
+        for layer in self.layers:
+            k0 = next(iter(layer.vertices))
+            if layer.vertices[k0].layer == 0:
+                # skip most outer layer
+                continue
+            layer.rootedTree.calculate_lbrb(self)

@@ -12,8 +12,8 @@ class RootedNode:
         self.children = []
         self.lb = None
         self.rb = None
-        self.enclosingFace = None
-        self.enclosedRoots = []
+        self.enclosingFaceRoot = None
+        self.enclosedComponents = []
 
     def add_child(self, child):
         self.children.append(child)
@@ -56,6 +56,41 @@ class RootedNode:
         for child in self.children:
             child.reverse()
 
+    def find_face_root(self, face):
+        if self.isFace and self.data.id == face.id:
+            return self
+        for child in self.children:
+            possibleFace = child.find_face_root(face)
+            if possibleFace is not None:
+                return possibleFace
+        return None
+
+    def add_encloser(self, faceRoot):
+        if not self.isFace:
+            return
+        self.enclosingFaceRoot = faceRoot
+        for child in self.children:
+            child.add_encloser(faceRoot)
+
+    def add_enclosed_component(self, component):
+        self.enclosedComponents.append(component)
+        component.rootedTree.root.add_encloser(self)
+
+    def get_leaves(self):
+        if self.is_leaf():
+            return [self]
+        leaves = []
+        for child in self.children:
+            leaves.extend(child.get_leaves())
+        return leaves
+    
+    def finalize_lbrb(self):
+        if not self.isFace:
+            return
+        for child in self.children:
+            child.finalize_lbrb()
+        self.lb = self.children[0].lb
+        self.rb = self.children[-1].rb
 
 class RootedTree:
     def __init__(self):
@@ -142,3 +177,27 @@ class RootedTree:
     def reverse(self):
         assert self.root is not None
         self.root.reverse()
+
+    def calculate_lbrb(self, graph):
+        leaves = self.root.get_leaves()
+        encloserChildren = self.root.enclosingFaceRoot.children
+
+        r = len(encloserChildren)
+
+        # Init LB(v1) and RB(vn)
+        leaves[0].lb = 1
+        leaves[-1].rb = r + 1
+
+        # Calculate LB(vi) for i = 2, ..., n
+        for j in range(1, len(leaves)):
+            vj = leaves[j]
+            i = leaves[j-1].lb
+            while True:
+                hasEdge = graph.has_edge(vj.u.id, encloserChildren[i].u.id)
+                if hasEdge:
+                    vj.lb = i
+                    leaves[j -1].rb = i
+                    break
+                i += 1
+
+        self.root.finalize_lbrb()
