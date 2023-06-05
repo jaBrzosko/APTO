@@ -34,6 +34,13 @@ class Collection:
     def get_vertex(self, vertexId):
         return self.vertices[vertexId]
     
+    def has_real_edge(self, uId, vId):
+        assert uId in self.vertices and vId in self.vertices
+        u = self.get_vertex(uId)
+        v = self.get_vertex(vId)
+        edge = u.get_edge_to(v)
+        return edge is not None and not edge.isFake
+
     def has_edge(self, uId, vId):
         assert uId in self.vertices and vId in self.vertices
         u = self.get_vertex(uId)

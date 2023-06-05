@@ -92,6 +92,43 @@ class RootedNode:
         self.lb = self.children[0].lb
         self.rb = self.children[-1].rb
 
+    def get_left_boundary(self):
+        left, right = self.getBoundaries()
+        return left
+    
+    def get_right_boundary(self):
+        left, right = self.getBoundaries()
+        return right
+    
+    def get_child_left_boundary(self, childNumber):
+        if childNumber < len(self.children):
+            return self.children[childNumber].get_left_boundary()
+        return self.children[-1].get_right_boundary()
+
+    def get_child_right_boundary(self, childNumber):
+        childNumber -= 1
+        if childNumber >= 0:
+            return self.children[childNumber].get_right_boundary()
+        return self.children[0].get_left_boundary()
+
+    def get_child_boundaries(self, childNumber):
+        assert childNumber >= 0 and childNumber < len(self.children)
+        return self.children[childNumber].getBoundaries()
+
+    def get_encloser(self):
+        return self.enclosingFaceRoot if self.isFace else self.parent.enclosingFaceRoot
+
+    def getBoundaries(self):
+        # if is layer 0 leaf return x, y
+        if self.u.layer == 0:
+            return [self.u], [self.v]
+
+        f = self.get_encloser()
+        q = self.lb - 1
+        t = self.rb - 1
+
+        return f.get_child_left_boundary(q) + [self.u], f.get_child_right_boundary(t) + [self.v]
+
 class RootedTree:
     def __init__(self):
         self.root = None
@@ -195,8 +232,8 @@ class RootedTree:
             while True:
                 hasEdge = graph.has_edge(vj.u.id, encloserChildren[i].u.id)
                 if hasEdge:
-                    vj.lb = i
-                    leaves[j -1].rb = i
+                    vj.lb = i + 1
+                    leaves[j -1].rb = i + 1
                     break
                 i += 1
 

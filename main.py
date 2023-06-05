@@ -89,7 +89,13 @@ def main():
     #     print(vertex.id, [(e.id, (e.u.id, e.v.id)) for e in vertex.edges])        
 
 def printRoot(root):
-    print((root.u.id, root.v.id), (root.lb, root.rb), [(e.u.id, e.v.id) for e in root.children])
+    if root.u.layer != 0:
+        leftBoundary, rightBoundary = root.getBoundaries()
+        if leftBoundary is None or rightBoundary is None:
+            print("No boundaries")
+        else:
+            print("Boundaries:", [v.id for v in leftBoundary], [v.id for v in rightBoundary])
+    print((root.u.id, root.v.id), (root.lb, root.rb), [(e.u.id, e.v.id) for e in root.children]) #, None if root.enclosingFaceRoot is None else (root.enclosingFaceRoot.u.id, root.enclosingFaceRoot.v.id))
     # print((root.u.id, root.v.id) , [(e.u.id, e.v.id) for e in root.children], 
         #   "No encloser" if root.enclosingFaceRoot is None else (root.enclosingFaceRoot.u.id, root.enclosingFaceRoot.v.id),
         #   "No enclosing" if len(root.enclosedComponents) == 0 else [(e.rootedTree.root.u.id, e.rootedTree.root.v.id) for e in root.enclosedComponents])
