@@ -48,10 +48,10 @@ class Collection:
         edge = u.get_edge_to(v)
         return edge is not None
 
-    def create_vertex(self, vertexId, layer):
+    def create_vertex(self, vertexId, layer, weight=1):
         if vertexId in self.vertices:
             return self.get_vertex(vertexId)
-        vertex = Vertex(vertexId, layer)
+        vertex = Vertex(vertexId, layer, weight=weight)
         return vertex
 
     def load_file(self, path):
@@ -227,8 +227,8 @@ class Collection:
     def load_as_layer(self, collection, layerNumber):
         for edge in collection.edges.values():
             if edge.u.layer == edge.v.layer == layerNumber:
-                u = self.create_vertex(edge.u.id, layerNumber)
-                v = self.create_vertex(edge.v.id, layerNumber)
+                u = self.create_vertex(edge.u.id, layerNumber, edge.u.weight)
+                v = self.create_vertex(edge.v.id, layerNumber, edge.v.weight)
                 collection.set_fake_vertex_copy(edge.u.id, u)
                 collection.set_fake_vertex_copy(edge.v.id, v)        
                 self.add_edge(Edge(edge.id, u, v))

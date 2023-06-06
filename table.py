@@ -31,7 +31,7 @@ class Table:
         v = self.y[-1]
         if u.id == v.id:
             # null entries where only one of (u, v) is present
-            # when both are present substract one
+            # when both are present substract this vertex weight
             for k in self.value:
                 uPresent = last_bit(k[0])
                 vPresent = last_bit(k[1])
@@ -39,7 +39,7 @@ class Table:
                     self.set(k[0], k[1], None)
                 elif uPresent == 1 and vPresent == 1:
                     value = self.get(k[0], k[1])
-                    self.set(k[0], k[1], None if value is None else value - 1)
+                    self.set(k[0], k[1], None if value is None else value - u.weight)
 
         elif self.graph.has_real_edge(u.id, v.id):
             # null entries where both are present
@@ -152,7 +152,8 @@ class Table:
                 if zInLs == zInRs == 0:
                     O.set(ls, rs, self.get(ls >> 1, rs >> 1))
                     continue
-                if self.graph.has_real_edge(self.x[-1].id, z.id) or self.graph.has_real_edge(self.y[-1].id, z.id):
+                # z is in set
+                if (last_bit(ls >> 1) == 1 and self.graph.has_real_edge(self.x[-1].id, z.id)) or (last_bit(rs >> 1) == 1 and self.graph.has_real_edge(self.y[-1].id, z.id)):
                     O.set(ls, rs, None)
                 else:
                     v = self.get(ls >> 1, rs >> 1)
@@ -163,13 +164,13 @@ class Table:
         return O
 
     def print(self):
-        print("Table:")
+        print("Table", [v.id for v in self.x], [v.id for v in self.y])
         maxSep = sepSizeN(len(self.x))
         print("***")
         for ls in range(maxSep + 1):
             for rs in range(maxSep + 1):
-                left = bin(ls)[2:]
-                right = bin(rs)[2:]
+                left = bin(ls)[2:].zfill(len(self.x))
+                right = bin(rs)[2:].zfill(len(self.y))
                 print(left, right, self.get(ls, rs))
             print("***")
 

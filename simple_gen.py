@@ -129,8 +129,8 @@ def get_cc(node: Node, start):
         if node.dirs[dir.value]:
             return dir
 
-g = Crate(4,4)
-g.randomize(0.6)
+g = Crate(6,6)
+g.randomize(0.5)
 g.generate()
 g.print()
-g.textify("./graphs/gen.txt")
+g.textify("./graphs/big.txt")

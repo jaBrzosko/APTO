@@ -2,7 +2,7 @@ from collection import Collection
 
 def main():
     collection = Collection()
-    collection.load_file('graphs/twoSecondLayers.txt')
+    collection.load_file('graphs/big.txt')
     collection.materialize()
     collection.reverse_layers()
 

@@ -281,15 +281,16 @@ class RootedTree:
         leaves[0].lb = 1
         leaves[-1].rb = r + 1
 
-        # Calculate LB(vi) for i = 2, ..., n
+        # Calculate LB(vj) for j = 2, ..., n
         for j in range(1, len(leaves)):
             vj = leaves[j]
             i = leaves[j-1].lb
             while True:
                 hasEdge = graph.has_edge(vj.u.id, encloserChildren[i - 1].u.id)
                 if hasEdge:
-                    vj.lb = i + 1
-                    leaves[j -1].rb = i + 1
+                    q = i # why is there +1? -> there was once
+                    vj.lb = q 
+                    leaves[j -1].rb = q
                     break
                 i += 1
 
