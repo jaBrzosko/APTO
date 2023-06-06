@@ -1,5 +1,6 @@
 from spanning import SpanningNode, SpanningTree
 from vertex import Vertex
+from table import Table
 
 
 class RootedNode:
@@ -129,6 +130,61 @@ class RootedNode:
 
         return f.get_child_left_boundary(q) + [self.u], f.get_child_right_boundary(t) + [self.v]
 
+    def solve(self, graph):
+        
+        # 1) - v is a face vertex that doesn't enclose any component
+        if self.isFace and len(self.enclosedComponents) == 0:
+            T = self.children[0].solve(graph)
+            for i in range(1, len(self.children)):
+                T = T.merge(self.children[i].solve(graph))
+
+            T = T.adjust()
+            return T
+        
+        # 2) - v is a face vertex that encloses a component
+        if self.isFace and len(self.enclosedComponents) > 0:
+            T = self.enclosedComponents[0].rootedTree.solve(graph)
+            T = T.contract()
+            T = T.adjust()
+            return T
+        
+        # 3) - v is a level 0 leaf
+        if self.u.layer == 0 and self.is_leaf():
+            T = Table(graph, [self.u], [self.v])
+            T = T.create_edge_table(self)
+            return T
+        
+        # 4) - v is a layer > 0 leaf
+        x = self.u
+        y = self.v
+        f = self.get_encloser()
+        p = None
+        # At some point there was self.rb + 1, but it exceeded the array bounds
+        # but I don't know why if it shouldn't be checked as special case
+        for i in range(self.lb, self.rb):
+            zi = f.children[i - 1].u
+            if graph.has_edge(y.id, zi.id):
+                p = i
+                break
+        if p is None:
+            p = self.rb
+
+        T = Table(graph, [x], [y])
+        T = T.create(self, p)
+        j = p - 1
+        while j >= self.lb:
+            temp = f.children[j - 1].solve(graph)
+            temp = temp.extend(x)
+            T = temp.merge(T)
+            j -= 1
+        j = p
+        while j < self.rb:
+            temp = f.children[j - 1].solve(graph)
+            temp = temp.extend(y)
+            T = T.merge(temp)
+            j += 1
+        return T
+
 class RootedTree:
     def __init__(self):
         self.root = None
@@ -230,7 +286,7 @@ class RootedTree:
             vj = leaves[j]
             i = leaves[j-1].lb
             while True:
-                hasEdge = graph.has_edge(vj.u.id, encloserChildren[i].u.id)
+                hasEdge = graph.has_edge(vj.u.id, encloserChildren[i - 1].u.id)
                 if hasEdge:
                     vj.lb = i + 1
                     leaves[j -1].rb = i + 1
@@ -238,3 +294,6 @@ class RootedTree:
                 i += 1
 
         self.root.finalize_lbrb()
+
+    def solve(self, graph):
+        return self.root.solve(graph)

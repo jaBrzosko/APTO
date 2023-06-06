@@ -180,22 +180,6 @@ class Collection:
         # check if all faces are covered in rooted tree
         while self.rootedTree.facesProcessed != len(self.faces):
             self.rootedTree.process_cutpoints(self.spanningTree)
-
-    def solve(self):
-        return self.table(self.rootedTree.root)
-    
-    def table(self, v):
-        if v.is_leaf():
-            tab = Table(v.u, v.v)
-            tab.create_edge_table()
-            return tab
-        T = self.table(v.first_child())
-
-        for i in range(1, len(v.children)):
-            Ti = self.table(v.children[i])
-            T = T.merge(Ti)
-        T.adjust()
-        return T
     
     def traingulate(self):
         copiedEdges = self.edges.copy()
@@ -414,3 +398,12 @@ class Collection:
                 # skip most outer layer
                 continue
             layer.rootedTree.calculate_lbrb(self)
+
+    def solve(self):
+        for layer in self.layers:
+            k0 = next(iter(layer.vertices))
+            if layer.vertices[k0].layer != 0:
+                # skip inner layers
+                continue
+            return layer.rootedTree.solve(self)
+

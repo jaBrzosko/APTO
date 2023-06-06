@@ -19,16 +19,21 @@ def main():
     collection.find_encloseres()
     collection.calculate_lbrb()
 
-    for i, layer in enumerate(collection.layers):
-        print("Layer", i)
+    T = collection.solve()
+    if T is not None:
+        T.print()
+    else:
+        print("No solution")
+    # for i, layer in enumerate(collection.layers):
+        # print("Layer", i)
         # for vertex in layer.vertices.values():
             # print(vertex.id, vertex.layer, [v.id for v in vertex.fatherCollection.vertices.values()])
         # for face in layer.faces:
             # print(face.id, [e.id for e in face.edges])
         # for vertex in layer.spanningTree.vertices:
             # print("Face " if vertex.isFace else "Edge ", vertex.data.id, [("F:" if e.isFace else "E:") + str(e.data.id) for e in vertex.neighbors])
-        root = layer.rootedTree.root
-        printRoot(root)
+        # root = layer.rootedTree.root
+        # printRoot(root)
 
     # for layer in collection.layers.values():
     #     layer.materialize()
