@@ -1,5 +1,6 @@
 from spanning import SpanningNode, SpanningTree
 from vertex import Vertex
+from table import Table
 
 
 class RootedNode:
@@ -10,6 +11,10 @@ class RootedNode:
         self.isFace = isFace
         self.parent = None
         self.children = []
+        self.lb = None
+        self.rb = None
+        self.enclosingFaceRoot = None
+        self.enclosedComponents = []
 
     def add_child(self, child):
         self.children.append(child)
@@ -45,6 +50,140 @@ class RootedNode:
                 if child.add_subtree(subRoot):
                     return True
         return False
+    
+    def reverse(self):
+        self.u, self.v = self.v, self.u
+        self.children.reverse()
+        for child in self.children:
+            child.reverse()
+
+    def find_face_root(self, face):
+        if self.isFace and self.data.id == face.id:
+            return self
+        for child in self.children:
+            possibleFace = child.find_face_root(face)
+            if possibleFace is not None:
+                return possibleFace
+        return None
+
+    def add_encloser(self, faceRoot):
+        if not self.isFace:
+            return
+        self.enclosingFaceRoot = faceRoot
+        for child in self.children:
+            child.add_encloser(faceRoot)
+
+    def add_enclosed_component(self, component):
+        self.enclosedComponents.append(component)
+        component.rootedTree.root.add_encloser(self)
+
+    def get_leaves(self):
+        if self.is_leaf():
+            return [self]
+        leaves = []
+        for child in self.children:
+            leaves.extend(child.get_leaves())
+        return leaves
+    
+    def finalize_lbrb(self):
+        if not self.isFace:
+            return
+        for child in self.children:
+            child.finalize_lbrb()
+        self.lb = self.children[0].lb
+        self.rb = self.children[-1].rb
+
+    def get_left_boundary(self):
+        left, right = self.getBoundaries()
+        return left
+    
+    def get_right_boundary(self):
+        left, right = self.getBoundaries()
+        return right
+    
+    def get_child_left_boundary(self, childNumber):
+        if childNumber < len(self.children):
+            return self.children[childNumber].get_left_boundary()
+        return self.children[-1].get_right_boundary()
+
+    def get_child_right_boundary(self, childNumber):
+        childNumber -= 1
+        if childNumber >= 0:
+            return self.children[childNumber].get_right_boundary()
+        return self.children[0].get_left_boundary()
+
+    def get_child_boundaries(self, childNumber):
+        assert childNumber >= 0 and childNumber < len(self.children)
+        return self.children[childNumber].getBoundaries()
+
+    def get_encloser(self):
+        return self.enclosingFaceRoot if self.isFace else self.parent.enclosingFaceRoot
+
+    def getBoundaries(self):
+        # if is layer 0 leaf return x, y
+        if self.u.layer == 0:
+            return [self.u], [self.v]
+
+        f = self.get_encloser()
+        q = self.lb - 1
+        t = self.rb - 1
+
+        return f.get_child_left_boundary(q) + [self.u], f.get_child_right_boundary(t) + [self.v]
+
+    def solve(self, graph):
+        
+        # 1) - v is a face vertex that doesn't enclose any component
+        if self.isFace and len(self.enclosedComponents) == 0:
+            T = self.children[0].solve(graph)
+            for i in range(1, len(self.children)):
+                T = T.merge(self.children[i].solve(graph))
+
+            T = T.adjust()
+            return T
+        
+        # 2) - v is a face vertex that encloses a component
+        if self.isFace and len(self.enclosedComponents) > 0:
+            T = self.enclosedComponents[0].rootedTree.solve(graph)
+            T = T.contract()
+            T = T.adjust()
+            return T
+        
+        # 3) - v is a level 0 leaf
+        if self.u.layer == 0 and self.is_leaf():
+            T = Table(graph, [self.u], [self.v])
+            T = T.create_edge_table(self)
+            return T
+        
+        # 4) - v is a layer > 0 leaf
+        x = self.u
+        y = self.v
+        f = self.get_encloser()
+        p = None
+        # At some point there was self.rb + 1, but it exceeded the array bounds
+        # but I don't know if it shouldn't be checked as special case
+        for i in range(self.lb, self.rb):
+            zi = f.children[i - 1].u
+            if graph.has_edge(y.id, zi.id):
+                p = i
+                break
+        if p is None:
+            p = self.rb
+
+        T = Table(graph, [x], [y])
+        T = T.create(self, p)
+        j = p - 1
+        while j >= self.lb:
+            temp = f.children[j - 1].solve(graph)
+            temp = temp.extend(x)
+            T = temp.merge(T)
+            j -= 1
+        j = p
+        while j < self.rb:
+            temp = f.children[j - 1].solve(graph)
+            temp = temp.extend(y)
+            T = T.merge(temp)
+            j += 1
+        return T
 
 class RootedTree:
     def __init__(self):
@@ -54,7 +193,10 @@ class RootedTree:
 
     def process_spanning_tree(self, spanningTree: SpanningTree):
         assert spanningTree.root_face is not None and spanningTree.root_face.isFace
-        rootVertex = spanningTree.root_face.data.edges[0].u
+        e0 = spanningTree.root_face.data.edges[0]
+        e1 = spanningTree.root_face.data.edges[1]
+        commonVertex = e0.get_common_vertex(e1)
+        rootVertex = e0.get_other_vertex(commonVertex)
         self.root = RootedNode(spanningTree.root_face.data, rootVertex, rootVertex, True)
 
         self.process_node(self.root, spanningTree.root_face)
@@ -125,3 +267,34 @@ class RootedTree:
                 faceRoot = RootedNode(face, intersectionVertex, intersectionVertex, True)
                 self.process_node(faceRoot, faceNode)
                 self.root.add_subtree(faceRoot)
+    def reverse(self):
+        assert self.root is not None
+        self.root.reverse()
+
+    def calculate_lbrb(self, graph):
+        leaves = self.root.get_leaves()
+        encloserChildren = self.root.enclosingFaceRoot.children
+
+        r = len(encloserChildren)
+
+        # Init LB(v1) and RB(vn)
+        leaves[0].lb = 1
+        leaves[-1].rb = r + 1
+
+        # Calculate LB(vj) for j = 2, ..., n
+        for j in range(1, len(leaves)):
+            vj = leaves[j]
+            i = leaves[j-1].lb
+            while True:
+                hasEdge = graph.has_edge(vj.u.id, encloserChildren[i - 1].u.id)
+                if hasEdge:
+                    q = i # why is there +1? -> there was once
+                    vj.lb = q 
+                    leaves[j -1].rb = q
+                    break
+                i += 1
+
+        self.root.finalize_lbrb()
+
+    def solve(self, graph):
+        return self.root.solve(graph)
