@@ -15,6 +15,7 @@ def main():
     collection.materialize_faces()
     collection.create_layers_faces()
     collection.check_reversing()
+
     collection.create_layers_spanning_trees()
     collection.find_encloseres()
     collection.calculate_lbrb()

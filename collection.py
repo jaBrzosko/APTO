@@ -154,23 +154,23 @@ class Collection:
                 break
 
         # fix bridges
-        edgesInFaces = []
-        for face in self.faces:
-            for edge in face.edges:
-                edgesInFaces.append(edge)
+        # edgesInFaces = []
+        # for face in self.faces:
+        #     for edge in face.edges:
+        #         edgesInFaces.append(edge)
 
-        for edge in self.edges.values():
-            if edge in edgesInFaces:
-                continue
-            face = Face(len(self.faces) + 1)
-            reversedEdge = Edge(-edge.id, edge.v, edge.u)
-            reversedEmbeding = Embeding(edge.embeding.c1, edge, edge, edge.embeding.cc2)
-            newEmbeding = Embeding(reversedEdge, edge.embeding.c2, edge.embeding.cc1, reversedEdge)
-            reversedEdge.set_embeding(reversedEmbeding)
-            edge.set_embeding(newEmbeding)
-            face.add_edge(edge)
-            face.add_edge(reversedEdge)
-            self.faces.append(face)
+        # for edge in self.edges.values():
+        #     if edge in edgesInFaces:
+        #         continue
+        #     face = Face(len(self.faces) + 1)
+        #     reversedEdge = Edge(-edge.id, edge.v, edge.u)
+        #     reversedEmbeding = Embeding(edge.embeding.c1, edge, edge, edge.embeding.cc2)
+        #     newEmbeding = Embeding(reversedEdge, edge.embeding.c2, edge.embeding.cc1, reversedEdge)
+        #     reversedEdge.set_embeding(reversedEmbeding)
+        #     edge.set_embeding(newEmbeding)
+        #     face.add_edge(edge)
+        #     face.add_edge(reversedEdge)
+        #     self.faces.append(face)
         
     def create_spanning_tree(self):
         for face in self.faces:

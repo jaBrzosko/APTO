@@ -160,7 +160,7 @@ class RootedNode:
         f = self.get_encloser()
         p = None
         # At some point there was self.rb + 1, but it exceeded the array bounds
-        # but I don't know why if it shouldn't be checked as special case
+        # but I don't know if it shouldn't be checked as special case
         for i in range(self.lb, self.rb):
             zi = f.children[i - 1].u
             if graph.has_edge(y.id, zi.id):

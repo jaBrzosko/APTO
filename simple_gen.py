@@ -71,6 +71,11 @@ class Crate:
                     self.mat[i][j + 1].dirs[Dirs.left.value] = True
                     self.mat[i][j].dirs[Dirs.right.value] = True
 
+    def get_layer(self, i, j):
+        iVal = self.h - 1 - i if i >= self.h / 2 else i
+        jVal = self.w - 1 - j if j >= self.w / 2 else j
+        return min(iVal, jVal)
+
     def textify(self, path) -> None:
         # just close your eyes
         edges = []
@@ -82,14 +87,15 @@ class Crate:
                     c2 = get_c(self.mat[i + 1][j], Dirs.up)
                     cc1 = get_cc(self.mat[i][j], Dirs.down)
                     cc2 = get_cc(self.mat[i + 1][j], Dirs.up)
-                    edges.append((index, i * self.w + j, (i + 1) * self.w + j, c1, c2, cc1, cc2, max(abs(i - (self.h - 1) / 2), abs(j - (self.w - 1) / 2)), max(abs(i + 1 - (self.h - 1) / 2), abs(j - (self.w - 1) / 2))))
+                    # iLayer = min(abs(i - (self.h - 1) / 2)
+                    edges.append((index, i * self.w + j, (i + 1) * self.w + j, c1, c2, cc1, cc2, self.get_layer(i, j), self.get_layer(i + 1, j)))
                     index += 1
                 if self.mat[i][j].dirs[Dirs.right.value]:
                     c1 = get_c(self.mat[i][j], Dirs.right)
                     c2 = get_c(self.mat[i][j + 1], Dirs.left)
                     cc1 = get_cc(self.mat[i][j], Dirs.right)
                     cc2 = get_cc(self.mat[i][j + 1], Dirs.left)
-                    edges.append((index, i * self.w + j, i * self.w + j + 1, c1, c2, cc1, cc2, max(abs(i - (self.h - 1) / 2), abs(j - (self.w - 1) / 2)), max(abs(i - (self.h - 1) / 2), abs(j + 1 - (self.w - 1) / 2))))
+                    edges.append((index, i * self.w + j, i * self.w + j + 1, c1, c2, cc1, cc2, self.get_layer(i, j), self.get_layer(i, j + 1)))
                     index += 1
         cookies = []
         for edge in edges:
@@ -129,8 +135,8 @@ def get_cc(node: Node, start):
         if node.dirs[dir.value]:
             return dir
 
-g = Crate(6,6)
-g.randomize(0.5)
+g = Crate(4,6)
+g.randomize(1)
 g.generate()
 g.print()
 g.textify("./graphs/big.txt")
